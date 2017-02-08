@@ -9,6 +9,7 @@
 import Foundation
 
 class UserT: NSObject {
+    var userID:Int = 0
     var name:String = ""
     var sex:Int = 0
     var age:Int = 0

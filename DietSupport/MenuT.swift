@@ -16,6 +16,7 @@ class MenuT: NSObject {
     var kaishiWeight:Double = 0
     var mokuHyoweight:Double = 0
     var jyutenSyubetsu:Int = 0
-    var kiboCategory:Int = 0
+    var kiboCategory:String = ""
     var workOut:NSMutableArray? = nil
+    var gazo:Data = Data()
 }

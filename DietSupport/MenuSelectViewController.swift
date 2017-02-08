@@ -8,232 +8,297 @@
 
 import UIKit
 
-class MenuSelectViewController: UIViewController {
+class MenuSelectViewController: UIViewController, UIScrollViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate{
 
-    let appDelegate:AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
-    private var json:NSDictionary!
-    private var menuScrollView:UIScrollView!
+    let appDelegate:AppDelegate = UIApplication.shared.delegate as! AppDelegate
+    fileprivate    var json:NSDictionary!
+    @IBOutlet weak var menuScrollView:UIScrollView!
+    fileprivate    var indicatorView: UIView!
+    @IBOutlet weak var calByDaylabel: UILabel!
+    @IBOutlet weak var menuRetryBtn: UIButton!
+    @IBOutlet weak var cameraBtn: UIButton!
+    @IBOutlet weak var fixBtn: UIButton!
+    @IBOutlet weak var selfMenuBtn: UIButton!
+    var page: Int = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        self.view.backgroundColor = UIColor.whiteColor()
+        let backButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+        navigationItem.backBarButtonItem = backButtonItem
         
-        let label = UILabel(frame:CGRectMake(30, 145, 330, 25))
-        label.text = "ダイエット期間　　" + appDelegate.menuT.kaishi + " 〜 " + appDelegate.menuT.syuryo;
-        label.font = UIFont.systemFontOfSize(13)
-        label.textAlignment = NSTextAlignment.Left
-        label.textColor = UIColor.blackColor()
-        self.view.addSubview(label)
+        navigationItem.title = "メニュー選択"
         
-        let label2 = UILabel(frame:CGRectMake(30, 180, 250, 25))
-        label2.text = "目標体重　　 " + String(appDelegate.menuT.mokuHyoweight) + "Kg";
-        label2.font = UIFont.systemFontOfSize(13)
-        label2.textAlignment = NSTextAlignment.Left
-        label2.textColor = UIColor.blackColor()
-        self.view.addSubview(label2)
+        let rightButton: UIBarButtonItem = UIBarButtonItem(title: "キャンセル", style: .plain, target: self, action: #selector(self.onClickRightButton(_:)))
+        navigationItem.rightBarButtonItem = rightButton
         
-        let alert: UIAlertController = UIAlertController(title: "", message: "好みのメニューを選びましょう！\n\n自分好みのメニューを作成することもできます。", preferredStyle:  UIAlertControllerStyle.Alert)
-        let defaultAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.Default, handler:{
-            (action: UIAlertAction!) -> Void in
-        })
+        self.view.backgroundColor = UIColor.white
 
-        alert.addAction(defaultAction)
+        appDelegate.menuSelectVC = self
         
-        presentViewController(alert, animated: true, completion: nil)
-
-
-        let fixBtn = UIButton(frame: CGRectMake(self.view.frame.width/2-(30) , 600, 50, 30))
-        fixBtn.backgroundColor = UIColor.lightGrayColor()
-        fixBtn.setTitle("決定", forState: UIControlState.Normal)
-        fixBtn.setTitleColor(UIColor.whiteColor(), forState: UIControlState.Normal)
-        fixBtn.addTarget(self, action:#selector(MenuSelectViewController.fixMenu(_:)), forControlEvents: UIControlEvents.TouchUpInside)
-        self.view.addSubview(fixBtn)
+        let gUserT: UserT = appDelegate.dbService.selectUserT()
         
-
+        var sexStr: String = ""
+        if gUserT.sex == 1 {
+            sexStr = "男性"
+        }else if gUserT.sex == 2 {
+            sexStr = "女性"
+        }
+        let strMsg: String = "　　性別：" + sexStr + "\n" + "　　年齢：" + String(gUserT.age) + "\n" + "　　体重：" + String(gUserT.weight) + "\n" +  "　　新陳代謝：" + String(gUserT.metabolism) + "\n\n上記の情報をもとにおすすめメニューを作成しました。\n\n自分好みのメニューを作成することもできます。"
         
+        //let strMsg: String = "上記の情報をもとにおすすめメニューを作成しました。"
         
-        
-        
-        /*ここからはダミーのメニューリストなので、実際はクラウドから返却されてきたものを使用*/
-        let workoutList = NSMutableArray(array: [])
-        var workoutList2 = NSMutableArray(array: [])
-    
-        var workoutT:WorkOutT = WorkOutT()
-        workoutT.workOUtName = "ジョギング"
-        workoutT.workOUtValue = 5
-        workoutT.workOutValueName = "km"
-        workoutT.workOUtCal = 300
-        workoutList2.addObject(workoutT)
-        
-        workoutT = WorkOutT()
-        workoutT.workOUtName = "ヨガ"
-        workoutT.workOUtValue = 10
-        workoutT.workOutValueName = "分"
-        workoutT.workOUtCal = 200
-        workoutList2.addObject(workoutT)
-        workoutList.addObject(workoutList2)
-        
-        workoutList2 = NSMutableArray(array: [])
-        workoutT = WorkOutT()
-        workoutT.workOUtName = "ジョギング2"
-        workoutT.workOUtValue = 5
-        workoutT.workOutValueName = "km"
-        workoutT.workOUtCal = 300
-        workoutList2.addObject(workoutT)
-        
-        workoutT = WorkOutT()
-        workoutT.workOUtName = "ヨガ2"
-        workoutT.workOUtValue = 10
-        workoutT.workOutValueName = "分"
-        workoutT.workOUtCal = 200
-        workoutList2.addObject(workoutT)
-        workoutList.addObject(workoutList2)
-        
-        workoutList2 = NSMutableArray(array: [])
-        workoutT = WorkOutT()
-        workoutT.workOUtName = "ジョギング3"
-        workoutT.workOUtValue = 5
-        workoutT.workOutValueName = "km"
-        workoutT.workOUtCal = 300
-        workoutList2.addObject(workoutT)
-        
-        workoutT = WorkOutT()
-        workoutT.workOUtName = "ヨガ3"
-        workoutT.workOUtValue = 10
-        workoutT.workOutValueName = "分"
-        workoutT.workOUtCal = 200
-        workoutList2.addObject(workoutT)
-        workoutList.addObject(workoutList2)
-        
-        
-        // ScrollViewを生成.
-        menuScrollView = UIScrollView()
-        
-        // ScrollViewの大きさを設定する.
-        menuScrollView.frame = CGRectMake(self.view.frame.width*0.1 , self.view.frame.height*0.4, self.view.frame.width*0.8, self.view.frame.height*0.4)
-        menuScrollView.pagingEnabled = true
-        //menuScrollView.backgroundColor = UIColor.blueColor()
-        menuScrollView.contentSize = CGSizeMake((self.view.frame.width*0.8)*CGFloat(workoutList.count), self.view.frame.height*0.4)
-        self.view.addSubview(menuScrollView)
-        
-        
-        
-        
-        var x:CGFloat = 20
-        var y:CGFloat = 30
-        for i in 0..<workoutList.count {
-            print("i = \(i)")
-            y = 30
-            let woList: NSMutableArray = workoutList.objectAtIndex(i) as! NSMutableArray
-            for i2 in 0..<woList.count {
-                print("i2 = \(i2)")
-                let workoutT: WorkOutT = woList.objectAtIndex(i2) as! WorkOutT
-                
-                let label = UILabel(frame:CGRectMake(x, y, 200, 25))
-                label.text = workoutT.workOUtName + "　　" + String(workoutT.workOUtValue) + workoutT.workOutValueName + "　　" + String(workoutT.workOUtCal) + "kcal";
-                label.font = UIFont.systemFontOfSize(13)
-                label.textAlignment = NSTextAlignment.Left
-                label.textColor = UIColor.blackColor()
-                menuScrollView.addSubview(label)
-                y = y + 35
+        MyAlertController.show(presentintViewController: self, title: "", message:strMsg, buttonTitle: "OK")
+        { action in
+            switch action {
+            case .ok :break
+            case .cancel :break
             }
-            x = x + (self.view.frame.width*0.8)
         }
         
+        menuScrollView.isPagingEnabled = true
+        menuScrollView.backgroundColor = UIColor.clear
+        menuScrollView.contentSize = CGSize(width: (self.view.frame.width*0.9)*CGFloat(appDelegate.cloudmenuList.count), height: self.view.frame.height*0.35)
         
+        menuScrollView.flashScrollIndicators()
+        menuScrollView.delegate = self
+        self.view.bringSubview(toFront: menuScrollView)
+        self.view.bringSubview(toFront: menuRetryBtn)
+        self.view.bringSubview(toFront: fixBtn)
+        self.view.bringSubview(toFront: selfMenuBtn)
         
+        self.showMenu()
         
-
+        menuRetryBtn.backgroundColor = UIColor(red:ConstStruct.btn_color_red , green:ConstStruct.btn_color_green, blue:ConstStruct.btn_color_blue,alpha:1.0)
+        menuRetryBtn.titleLabel?.adjustsFontSizeToFitWidth = true
+        menuRetryBtn.layer.cornerRadius = 3
+        
+        fixBtn.backgroundColor = UIColor(red:ConstStruct.btn_color_red , green:ConstStruct.btn_color_green, blue:ConstStruct.btn_color_blue,alpha:1.0)
+        fixBtn.titleLabel?.adjustsFontSizeToFitWidth = true
+        fixBtn.layer.cornerRadius = 3
+        
+        selfMenuBtn.backgroundColor = UIColor(red:ConstStruct.btn_color_red , green:ConstStruct.btn_color_green, blue:ConstStruct.btn_color_blue,alpha:1.0)
+        selfMenuBtn.titleLabel?.adjustsFontSizeToFitWidth = true
+        selfMenuBtn.layer.cornerRadius = 3
     }
 
-    func fixMenu(sender: UIButton){
-        let alert: UIAlertController = UIAlertController(title: "メニュー作成", message: "この内容でメニューを作成しますか？", preferredStyle:  UIAlertControllerStyle.Alert)
-        let defaultAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.Default, handler:{
-            (action: UIAlertAction!) -> Void in
+    func reviewMenu(_ indicator: UIActivityIndicatorView){
+        for subview in menuScrollView.subviews{
+            subview.removeFromSuperview()
+        }
+        
+        self.menuScrollView.addSubview(indicator)
+        indicator.startAnimating()
+    }
+    
+    func showMenu(){
+        
+        var x:CGFloat = 0
+        var y:CGFloat = 0
+        
+        for subview in menuScrollView.subviews{
+            subview.removeFromSuperview()
+        }
+        
+        for i in 0..<appDelegate.cloudmenuList.count {
+            print("i = \(i)")
+            y = 60
+            let woList: NSMutableArray = appDelegate.cloudmenuList.object(at: i) as! NSMutableArray
             
-            let URL = NSURL(string: "http://eserve.sakura.ne.jp/diet/")
-            let req = NSURLRequest(URL: URL!)
+            let menuNameLabel = UILabel(frame:CGRect(x: x+(self.view.frame.width*0.9)*0.01, y: y-35, width: (self.view.frame.width*0.9)*0.98, height: 35))
+            menuNameLabel.text = "おすすめメニュー" + String(i+1)
+            menuNameLabel.font = UIFont.boldSystemFont(ofSize: 18)
+            menuNameLabel.textAlignment = NSTextAlignment.center
+            menuNameLabel.textColor = UIColor.white
+            menuNameLabel.backgroundColor = UIColor(red:ConstStruct.btn_color_red , green:ConstStruct.btn_color_green, blue:ConstStruct.btn_color_blue,alpha:1.0)
+            //menuNameLabel.layer.borderColor = UIColor(red:0.86 , green:0.86, blue:0.86,alpha:1.0).cgColor
+            //menuNameLabel.layer.borderWidth = 1
+            menuNameLabel.layer.cornerRadius = 2
+            menuNameLabel.clipsToBounds = true
+            menuScrollView.addSubview(menuNameLabel)
             
-            let configuration = NSURLSessionConfiguration.defaultSessionConfiguration()
-            let session = NSURLSession(configuration: configuration, delegate:nil, delegateQueue:NSOperationQueue.mainQueue())
+            let menubackView: UIView = UIView(frame: CGRect(x: x+(self.view.frame.width*0.9)*0.01, y: y, width: (self.view.frame.width*0.9)*0.98, height: self.view.frame.height*0.27))
+            //backView.frame = self.view.bounds
+            menubackView.backgroundColor = UIColor.white
+            menubackView.layer.borderColor = UIColor(red:0.86 , green:0.86, blue:0.86,alpha:1.0).cgColor
+            menubackView.layer.borderWidth = 1
+            menubackView.layer.cornerRadius = 2
+            menuScrollView.addSubview(menubackView)
             
-            var json:NSDictionary = NSDictionary()
+            var totalCal: Double = 0
             
-            let task = session.dataTaskWithRequest(req, completionHandler: {
-                (data, response, error) -> Void in
-                do {
-                    
-                    //let json = try NSJSONSerialization.JSONObjectWithData(data!, options:NSJSONReadingOptions.AllowFragments ) as! NSDictionary
-                    json = try NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.MutableContainers) as! NSDictionary
-                    print(json)
-                    //let workout_name: String = json["workout_name"] as! String
-                    //print(workout_name)
-                    self.workoutDataSave(json)
-                    
-                } catch {
-                    print("エラー")
-                    //エラー処理
-                    
-                }
+            for i2 in 0..<woList.count {
+                print("i2 = \(i2)")
+                let workoutT: WorkOutT = woList.object(at: i2) as! WorkOutT
                 
-            })
+                let backView: UIView = UIView(frame: CGRect(x: x, y: y, width: self.view.frame.width*0.9, height: self.view.frame.height*0.052))
+                backView.backgroundColor = UIColor.clear
+                menuScrollView.addSubview(backView)
+                
+                let imgView = UIImageView(frame: CGRect(x: 15, y: self.view.frame.height*0.015, width: 20, height: self.view.frame.height*0.03))
+                let img = UIImage(named: workoutT.workOUtID.substring(to: workoutT.workOUtID.index(workoutT.workOUtID.startIndex, offsetBy: 2)))
+                imgView.image = img
+                backView.addSubview(imgView)
+                
+                let workOUtNameLabel = UILabel(frame:CGRect(x: 40, y: self.view.frame.height*0.0075, width: backView.frame.width/2.2, height: self.view.frame.height*0.0374))
+                workOUtNameLabel.text = workoutT.workOUtName
+                workOUtNameLabel.font = UIFont.boldSystemFont(ofSize: 12)
+                workOUtNameLabel.textAlignment = NSTextAlignment.left
+                workOUtNameLabel.adjustsFontSizeToFitWidth = true
+                workOUtNameLabel.textColor = UIColor.black
+                backView.addSubview(workOUtNameLabel)
+                
+                let workOUtValueLabel = UILabel(frame:CGRect(x: backView.frame.width/2, y: self.view.frame.height*0.0075, width: backView.frame.width/4, height: self.view.frame.height*0.0374))
+                workOUtValueLabel.text = String(workoutT.workOUtValue) + workoutT.workOutValueName
+                workOUtValueLabel.font = UIFont.systemFont(ofSize: 13)
+                workOUtValueLabel.textAlignment = NSTextAlignment.center
+                workOUtValueLabel.textColor = UIColor.black
+                //workOUtValueLabel.backgroundColor = UIColor(red:0.47 , green:0.53, blue:0.60,alpha:1.0)
+                //workOUtValueLabel.layer.cornerRadius = 2
+                // workOUtValueLabel.clipsToBounds = true
+                //workOUtValueLabel.textColor = UIColor.white
+                backView.addSubview(workOUtValueLabel)
+                
+                let workOUtCalLabel = UILabel(frame:CGRect(x: (backView.frame.width/3)*2+10, y: self.view.frame.height*0.0075, width: backView.frame.width/4, height: self.view.frame.height*0.0374))
+                workOUtCalLabel.text = String(format: "%.1f", workoutT.workOUtCal * Double(workoutT.workOUtValue)) + "kcal"
+                totalCal = totalCal + workoutT.workOUtCal * Double(workoutT.workOUtValue)
+                workOUtCalLabel.textAlignment = NSTextAlignment.center
+                workOUtCalLabel.font = UIFont.boldSystemFont(ofSize: CGFloat(13))
+                workOUtCalLabel.backgroundColor = UIColor(red:ConstStruct.cal_color_red , green:ConstStruct.cal_color_green, blue:ConstStruct.cal_color_blue,alpha:1.0)
+                //workOUtCalLabel.backgroundColor = UIColor(red:0.39 , green:0.58, blue:0.93,alpha:1.0)
+                workOUtCalLabel.layer.cornerRadius = 8
+                workOUtCalLabel.clipsToBounds = true
+                workOUtCalLabel.textColor = UIColor.white
+                backView.addSubview(workOUtCalLabel)
+                
+                y = y + self.view.frame.height*0.052
+            }
             
-            task.resume()
+            let backView: UIView = UIView(frame: CGRect(x: x, y: y, width: self.view.frame.width*0.9, height: self.view.frame.height*0.052))
+            backView.backgroundColor = UIColor.clear
+            menuScrollView.addSubview(backView)
             
+            let totalCalLabel = UILabel(frame:CGRect(x: (backView.frame.width/1.6), y: self.view.frame.height*0.0075, width: backView.frame.width/3, height: self.view.frame.height*0.0374))
+            totalCalLabel.text = String(format: "合計　%.1f", totalCal) + "kcal"
+            totalCalLabel.textAlignment = NSTextAlignment.right
+            totalCalLabel.font = UIFont.boldSystemFont(ofSize: CGFloat(13))
+            totalCalLabel.textColor = UIColor.black
+            backView.addSubview(totalCalLabel)
             
-            //self.workoutDataSave(json)
-            
-        })
+            x = x + self.view.frame.width*0.9
+        }
         
-        let cancelAction: UIAlertAction = UIAlertAction(title: "キャンセル", style: UIAlertActionStyle.Cancel, handler:{
-            (action: UIAlertAction!) -> Void in
-        })
+        let daySpan: Int = Int((Util.convertDateFormat(appDelegate.menuT.syuryo).timeIntervalSince(Util.convertDateFormat(appDelegate.menuT.kaishi)))/60/60/24)+1
         
-        alert.addAction(cancelAction)
-        alert.addAction(defaultAction)
+        calByDaylabel.text = String(format: "1日あたり%.1f",(((appDelegate.menuT.kaishiWeight-appDelegate.menuT.mokuHyoweight)*1000)*9)/Double(daySpan)) + "kcal"
+    }
+    
+    @IBAction func menuRetry(_ sender: UIButton){
+        MyAlertController.show(presentintViewController: self, title: "", message: "メニューを再検索しますか？",cancelTitle: "いいえ", acceptTitle: "はい"){ action in
+            switch action {
+            case .ok :
+                    self.menuKensaku()
+                    break
+            case .cancel :break
+                
+            }
+        }
+    }
+    
+    func menuKensaku(){
+        let indicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
+        indicator.center = CGPoint(x: self.menuScrollView.bounds.midX, y: self.menuScrollView.bounds.midY)
         
-        presentViewController(alert, animated: true, completion: nil)
+        for subview in self.menuScrollView.subviews{
+            subview.removeFromSuperview()
+        }
+        
+        self.menuScrollView.addSubview(indicator)
+        indicator.startAnimating()
+        
+        let globalQueue = DispatchQueue.global(qos: DispatchQoS.QoSClass.default)
+        globalQueue.async {
+            let appDelegate:AppDelegate = UIApplication.shared.delegate as! AppDelegate
+            let seUserT = appDelegate.dbService.selectUserT()
+            let rt = CloudSync.demandMenu(appDelegate.menuT, userT: seUserT)
+            
+            DispatchQueue.main.async {
+                indicator.stopAnimating()
+                indicator.removeFromSuperview()
+                if rt.1 == "" {
+                    appDelegate.cloudmenuList.removeAllObjects()
+                    appDelegate.cloudmenuList = rt.0
+                    self.showMenu()
+                }else{
+                    self.alertView("", rt.1)
+                    return
+                }
+            }
+        }
+    }
+    
+    @IBAction func fixMenu(_ sender: UIButton){
+        
+        MyAlertController.show(presentintViewController: self, title: "", message: "メニューを作成しますか？",cancelTitle: "いいえ", acceptTitle: "はい"){ action in
+            switch action {
+            case .ok :  self.workoutDataSave()
+                        break
+            case .cancel :break
+                
+            }
+        }
     }
 
-    func workoutDataSave(json: NSDictionary){
+    func workoutDataSave(){
     
         self.appDelegate.dbService.insertMenuT(self.appDelegate.menuT)
         
+        let woList: NSMutableArray = appDelegate.cloudmenuList.object(at: page) as! NSMutableArray
+        let menuNo = self.appDelegate.dbService.selectMaxMenuNo()
+        for i in 0..<woList.count {
+            let workoutT: WorkOutT = woList.object(at: i) as! WorkOutT
+            workoutT.menuNo = menuNo
+            workoutT.workOutNo = i + 1
+            self.appDelegate.dbService.insertWorkoutT(workoutT)
+        }
+        /*
         //ここから下は仮
         let workoutT:WorkOutT = WorkOutT()
         workoutT.menuNo = self.appDelegate.dbService.selectMaxMenuNo()
         workoutT.workOutNo = 1
-        workoutT.workOUtID = 1000
-        print(json["workout_name"] as! String)
-        workoutT.workOUtName = json["workout_name"] as! String
-        workoutT.workOUtValue = Int(json["workout_value"] as! String)!
-        workoutT.workOutValueName = json["workout_value_name"] as! String
-        workoutT.workOUtCal = Int(json["workout_cal"] as! String)!
+        workoutT.workOUtID = "W990"
+        //print(json["workout_name"] as! String)
+        //workoutT.workOUtName = json["workout_name"] as! String
+        workoutT.workOUtName = "ランニング"
+        workoutT.workOUtValue = 5
+        workoutT.workOutValueName = "Km"
+        workoutT.workOUtCal = 300
+        workoutT.workOutSetsumei = "必死のランニングです。かなりきついので怪我をしないように。"
         
         self.appDelegate.dbService.insertWorkoutT(workoutT)
         
         workoutT.menuNo = self.appDelegate.dbService.selectMaxMenuNo()
         workoutT.workOutNo = 2
-        workoutT.workOUtID = 2000
+        workoutT.workOUtID = "W991"
         workoutT.workOUtName = "筋トレ"
         workoutT.workOUtValue = 10
         workoutT.workOutValueName = "分"
         workoutT.workOUtCal = 400
+        workoutT.workOutSetsumei = "筋トレです。かなりきついので怪我をしないように。"
         
         self.appDelegate.dbService.insertWorkoutT(workoutT)
         
         workoutT.menuNo = self.appDelegate.dbService.selectMaxMenuNo()
         workoutT.workOutNo = 3
-        workoutT.workOUtID = 3000
+        workoutT.workOUtID = "W992"
         workoutT.workOUtName = "ヨガ"
         workoutT.workOUtValue = 15
         workoutT.workOutValueName = "分"
         workoutT.workOUtCal = 250
-        
+        workoutT.workOutSetsumei = "ヨガです。ゆっくりリラックスしながらやりましょう。"
         self.appDelegate.dbService.insertWorkoutT(workoutT)
-        
+        */
         self.torokuDayWorkOutT()
         
         //ここまで仮
@@ -244,17 +309,17 @@ class MenuSelectViewController: UIViewController {
     }
     
     func torokuDayWorkOutT(){
-        let datefrom: NSDate = Util.dateFromISOString(self.appDelegate.menuT.kaishi) as NSDate
+        let datefrom: Date = Util.dateFromISOString(self.appDelegate.menuT.kaishi) as Date
         //let datefrom = Util.stringFromDate(self.appDelegate.menuT.kaishi, format: "yyyy年MM月dd日"), forState: .Normal)
-        let dateto: NSDate = Util.dateFromISOString(self.appDelegate.menuT.syuryo) as NSDate
+        let dateto: Date = Util.dateFromISOString(self.appDelegate.menuT.syuryo) as Date
         
-        let span = datefrom.timeIntervalSinceDate(dateto) // 1209600秒差
+        let span = datefrom.timeIntervalSince(dateto) // 1209600秒差
         var daySpan: Int = abs(Int(span/60/60/24))
         
         daySpan = daySpan + 1
         print("期間 \(daySpan)")
         
-        var wkDate :NSDate
+        var wkDate :Date
         wkDate = datefrom
         let dayWorkoutT:DayWorkOutT = DayWorkOutT()
         let sa: Double = (appDelegate.menuT.kaishiWeight - appDelegate.menuT.mokuHyoweight)/Double(daySpan)
@@ -265,39 +330,138 @@ class MenuSelectViewController: UIViewController {
             dayWorkoutT.menuNo = self.appDelegate.dbService.selectMaxMenuNo()
             dayWorkoutT.day = Util.ISOStringFromDate(wkDate)
             //print("作成する日付 \(dayWorkoutT.day)")
-            dayWorkoutT.workOutNo1 = 1
+            dayWorkoutT.workOutNo1 = 0
             genWeight = genWeight - sa
             print("genWeight \(genWeight) sa \(sa)")
             dayWorkoutT.mokuhyoWeight = genWeight
-            dayWorkoutT.jissekiValue1 = 0
-            dayWorkoutT.jissekiCal1 = 0
+            dayWorkoutT.jissekiValue1 = -1
+            dayWorkoutT.jissekiCal1 = -1
             dayWorkoutT.workOutNo2 = 0
-            dayWorkoutT.jissekiValue2 = 0
-            dayWorkoutT.jissekiCal2 = 0
+            dayWorkoutT.jissekiValue2 = -1
+            dayWorkoutT.jissekiCal2 = -1
             dayWorkoutT.workOutNo3 = 0
-            dayWorkoutT.jissekiValue3 = 0
-            dayWorkoutT.jissekiCal3 = 0
+            dayWorkoutT.jissekiValue3 = -1
+            dayWorkoutT.jissekiCal3 = -1
             dayWorkoutT.workOutNo4 = 0
-            dayWorkoutT.jissekiValue4 = 0
-            dayWorkoutT.jissekiCal4 = 0
+            dayWorkoutT.jissekiValue4 = -1
+            dayWorkoutT.jissekiCal4 = -1
             dayWorkoutT.workOutNo5 = 0
-            dayWorkoutT.jissekiValue5 = 0
-            dayWorkoutT.jissekiCal5 = 0
+            dayWorkoutT.jissekiValue5 = -1
+            dayWorkoutT.jissekiCal5 = -1
             
             self.appDelegate.dbService.insertDayWorkoutT(dayWorkoutT)
             
-            wkDate = NSDate(timeInterval: 60*60*24, sinceDate: wkDate) as NSDate
+            wkDate = Date(timeInterval: 60*60*24, since: wkDate) as Date
             print("\(i)")
         }
     }
     
-    override func viewWillAppear(animated: Bool) {
+    @IBAction func selfMenu(_ sender: UIButton){
+        self.performSegue(withIdentifier: "selfMenuViewController", sender:self)
+    }
+    
+    /*
+    @IBAction func onCameraBtnClick(_ sender: UIButton){
+        //self.performSegue(withIdentifier: "cameraViewController", sender:self)
+        
+        let sourceType:UIImagePickerControllerSourceType = UIImagePickerControllerSourceType.camera
+        // カメラが利用可能かチェック
+        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.camera){
+            // インスタンスの作成
+            let cameraPicker = UIImagePickerController()
+            cameraPicker.sourceType = sourceType
+            cameraPicker.delegate = self
+            self.present(cameraPicker, animated: true, completion: nil)
+            
+        }
+    }*/
+    
+    func onClickRightButton(_ sender: UIButton){
+        MyAlertController.show(presentintViewController: self, title: "", message: "メニューの作成をキャンセルしてもよろしいですか？",cancelTitle: "いいえ", acceptTitle: "はい"){ action in
+            switch action {
+            case .ok :
+                self.navigationController?.popToViewController(self.navigationController!.viewControllers[0], animated: true)
+                break
+            case .cancel :break
+            }
+        }
+    }
+    
+    func alertView(_ title: String, _ msg: String) {
+        MyAlertController.show(presentintViewController: self, title: "", message:msg, buttonTitle: "OK")
+        { action in
+            switch action {
+            case .ok :break
+            default  :break
+            }
+        }
+    }
+    
+    func setCameraBtnImg(_ img: UIImage, data: Data){
+        cameraBtn.imageView?.contentMode = .scaleAspectFit
+        cameraBtn.setImage(img, for: .normal)
+        cameraBtn.setImage(img, for: .highlighted)
+        appDelegate.menuT.gazo = data
+    }
+    
+    /*
+    //　撮影が完了
+    func imagePickerController(_ imagePicker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        print("撮影が完了")
+        if var pickedImage = info[UIImagePickerControllerOriginalImage] as? UIImage {
+            //cameraBtn.contentMode = .scaleAspectFit
+            //cameraView.image = pickedImage
+            
+            UIGraphicsBeginImageContext(pickedImage.size);
+            pickedImage.draw(in: CGRect(x: 0, y: 0, width: pickedImage.size.width, height: pickedImage.size.height))
+            pickedImage = UIGraphicsGetImageFromCurrentImageContext()!
+            UIGraphicsEndImageContext();
+            
+            cameraBtn.setBackgroundImage(pickedImage, for: .normal)
+            
+            if let data = UIImagePNGRepresentation(pickedImage) {
+                appDelegate.menuT.gazo = data
+            }
+        }
+        
+        //閉じる処理
+        imagePicker.dismiss(animated: true, completion: nil)
+        
+    }
+    
+    // 撮影がキャンセル
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true, completion: nil)
+    }
+    */
+    
+    /*
+    // 書き込み完了結果の受け取り
+    func image(_ image: UIImage, didFinishSavingWithError error: NSError!, contextInfo: UnsafeMutableRawPointer) {
+        
+        print("保存成功")
+        if error != nil {
+            print(error.code)
+        }
+        else{
+        }
+    }*/
+    
+    override func viewWillAppear(_ animated: Bool) {
         super.viewDidDisappear(animated)
     }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView){
+        
+        let offset = scrollView.contentOffset
+        let pageWidth = menuScrollView.frame.width
+        page = Int(round(offset.x / pageWidth))
+        print("スクロールストップ \(page)")
     }
 
 
